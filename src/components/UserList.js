@@ -9,21 +9,23 @@ const UserList = () => {
   getUsers,
   getCurrentPhoneUsers,
   getUserNumbers,
+  clearHangUps,
   checkCurrent,
   users,
   current,
  } = ringCentralContext;
 
- console.log(users);
-
  useEffect(() => {
   getUsers();
  }, []);
+
+ console.log(users);
 
  useEffect(() => {
   const interval = setInterval(() => {
    getCurrentPhoneUsers();
    checkCurrent(users);
+   clearHangUps();
   }, 15000);
   return () => clearInterval(interval);
  }, [current]);
@@ -32,9 +34,9 @@ const UserList = () => {
   <div>
    <div className='grid-3'>
     {users != null &&
-     users.map((user) => (
-      <UserItem user={user} key={user.id} current={current} />
-     ))}
+     users
+      .filter((u) => typeof u === "object")
+      .map((user) => <UserItem user={user} key={user.id} current={current} />)}
    </div>
   </div>
  );

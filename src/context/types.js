@@ -1,5 +1,6 @@
 export const CLEAR_CURRENT = "CLEAR_CURRENT";
 export const GET_CURRENT = "GET_CURRENT";
+export const SET_CURRENTCALLS = "SET_CURRENTCALLS";
 export const ADD_NUMBERS = "ADD_NUMBERS";
 export const SET_USERS = "SET_USERS";
 export const SET_CODEVERIFIER = "SET_CODEVERIFIER";
@@ -7,3 +8,5 @@ export const SET_QUERY = "SET_QUERY";
 export const POST_TOKEN = "POST_TOKEN";
 export const CLEAR_TOKEN = "CLEAR_TOKEN";
 export const REFRESH_TOKEN = "REFRESH_TOKEN";
+export const SET_USERCALLLOG = "SET_USERCALLLOG";
+export const CLEAR_USERCALLLOG = "CLEAR_USERCALLLOG";

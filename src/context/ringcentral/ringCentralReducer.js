@@ -6,6 +6,9 @@ import {
  SET_QUERY,
  POST_TOKEN,
  REFRESH_TOKEN,
+ SET_CURRENTCALLS,
+ SET_USERCALLLOG,
+ CLEAR_USERCALLLOG,
 } from "../types";
 
 export default (state, action) => {
@@ -14,6 +17,18 @@ export default (state, action) => {
    return {
     ...state,
     current: null,
+   };
+
+  case CLEAR_USERCALLLOG:
+   return {
+    ...state,
+    userCallLog: null,
+   };
+
+  case SET_USERCALLLOG:
+   return {
+    ...state,
+    userCallLog: action.payload,
    };
 
   case POST_TOKEN:
@@ -36,6 +51,11 @@ export default (state, action) => {
    return {
     ...state,
     current: action.payload,
+   };
+  case SET_CURRENTCALLS:
+   return {
+    ...state,
+    currentCalls: action.payload,
    };
   case SET_QUERY:
    return {

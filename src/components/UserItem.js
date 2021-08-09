@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { sdk } from "../lib";
+import React, { useEffect, useState, useContext } from "react";
+import RingCentralContext from "../context/ringcentral/ringCentralContext";
 import CsvDownload from "react-json-to-csv";
 import DatePicker from "react-datepicker";
+import axios from "axios";
 import "react-datepicker/dist/react-datepicker.css";
-import RecordingItem from "./RecordingItem";
 
 const UserItem = ({ user, current }) => {
+ const ringCentralContext = useContext(RingCentralContext);
+
+ const { getRangeCalls, clearRangeCalls, userCallLog } = ringCentralContext;
  const [calls, setCalls] = useState(null);
  const [data, setData] = useState(null);
  const [portalState, setPortalState] = useState(false);
@@ -13,8 +16,13 @@ const UserItem = ({ user, current }) => {
  const [endDate, setEndDate] = useState(new Date());
 
  useEffect(() => {
-  if (calls != null) {
-   const dat = calls.map(
+  if (
+   userCallLog !== null &&
+   userCallLog[0].to.extensionId &&
+   userCallLog[0].to.extensionId == user.id
+  ) {
+   console.log("yetters");
+   const dat = userCallLog.map(
     ({ from, to, type, direction, startTime, duration, action, result }) => {
      const { phoneNumber } = from;
      const { name } = to;
@@ -31,52 +39,38 @@ const UserItem = ({ user, current }) => {
      return obj;
     }
    );
-
+   setCalls(userCallLog);
    setData(dat);
-  }
- }, [calls, setData]);
-
- const getRangeCalls = async (startDate, endDate) => {
-  const toIsoString = (date) => {
-   var tzo = -date.getTimezoneOffset(),
-    dif = tzo >= 0 ? "+" : "-",
-    pad = function (num) {
-     var norm = Math.floor(Math.abs(num));
-     return (norm < 10 ? "0" : "") + norm;
-    };
-
-   return (
-    date.getFullYear() +
-    "-" +
-    pad(date.getMonth() + 1) +
-    "-" +
-    pad(date.getDate()) +
-    "T" +
-    pad(date.getHours()) +
-    ":" +
-    pad(date.getMinutes()) +
-    ":" +
-    pad(date.getSeconds()) +
-    dif +
-    pad(tzo / 60) +
-    ":" +
-    pad(tzo % 60)
+   clearRangeCalls();
+  } else if (
+   userCallLog != null &&
+   userCallLog[0].from.extensionId &&
+   userCallLog[0].from.extensionId == user.id
+  ) {
+   const dat = userCallLog.map(
+    ({ from, to, type, direction, startTime, duration, action, result }) => {
+     const { phoneNumber } = from;
+     const { name } = to;
+     let obj = {
+      caller: phoneNumber,
+      agent: name,
+      type,
+      direction,
+      startTime,
+      duration,
+      action,
+      result,
+     };
+     return obj;
+    }
    );
-  };
+   setCalls(userCallLog);
+   setData(dat);
+   clearRangeCalls();
+  }
+ }, [userCallLog]);
 
-  const queryParams = {
-   dateFrom: toIsoString(new Date(startDate)),
-   dateTo: toIsoString(new Date(endDate)),
-  };
-
-  const res = await await (
-   await sdk.get(
-    `/restapi/v1.0/account/~/extension/${user.id}/call-log`,
-    queryParams
-   )
-  ).json();
-  setCalls(res.records);
- };
+ console.log(calls);
 
  const { extensionNumber, name, isActive, currentCall } = user;
  //const { firstName, lastName, company, businessPhone, department } = contact;
@@ -161,7 +155,7 @@ const UserItem = ({ user, current }) => {
       <div className={data != null ? "grid-2" : "text-center"}>
        <button
         className='btn btn-dark'
-        onClick={() => getRangeCalls(startDate, endDate)}>
+        onClick={() => getRangeCalls(startDate, endDate, user)}>
         Filter Calls By Date
        </button>
 
@@ -178,11 +172,13 @@ const UserItem = ({ user, current }) => {
     </div>
    )}
    <div className='all-center py-3'>
-    <button
-     className='btn btn-dark btn-block'
-     onClick={() => setPortalState((prevState) => !prevState)}>
-     {portalState === false ? "Open Audio Portal" : "View Call Stats"}
-    </button>
+    {calls && (
+     <button
+      className='btn btn-dark btn-block'
+      onClick={() => setPortalState((prevState) => !prevState)}>
+      {portalState === false ? "Open Audio Portal" : "View Call Stats"}
+     </button>
+    )}
     {calls != null && (
      <button
       className='btn btn-block btn-danger'
